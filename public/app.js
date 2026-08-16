@@ -1,9 +1,108 @@
-function showSection(id){document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');if(id==='dashboard')loadStats();if(id==='messages')loadDialogs()}
-async function api(url,options){const r=await fetch(url,options);const d=await r.json();if(!r.ok)throw new Error(d.error||'Request failed');return d}
-async function loadStats(){try{const d=await api('/api/stats');document.getElementById('total').textContent=d.total||0;document.getElementById('telegram').textContent=d.telegram||0;document.getElementById('connection').textContent=d.connected?'Connected':'Not connected'}catch{}}
-async function sendTelegramCode(){const phone=document.getElementById('phone').value.trim();const box=document.getElementById('telegramResult');try{const d=await api('/api/telegram/send-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone})});box.textContent=d.message}catch(e){box.textContent=e.message}}
-async function verifyTelegram(){const phone=document.getElementById('phone').value.trim(),code=document.getElementById('code').value.trim(),box=document.getElementById('telegramResult');try{const d=await api('/api/telegram/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,code})});if(d.passwordRequired){document.getElementById('passwordPanel').classList.remove('hidden');box.textContent=d.message}else{box.textContent=d.message;loadStats()}}catch(e){box.textContent=e.message}}
-async function verifyPassword(){const password=document.getElementById('password').value,box=document.getElementById('telegramResult');try{const d=await api('/api/telegram/password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});box.textContent=d.message;loadStats()}catch(e){box.textContent=e.message}}
-async function loadDialogs(){const select=document.getElementById('dialogs'),result=document.getElementById('messageResult');try{const rows=await api('/api/telegram/dialogs');select.innerHTML='<option value="">Select a chat</option>';rows.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name;select.appendChild(o)});result.textContent=`Loaded ${rows.length} accessible chats.`}catch(e){result.textContent=e.message}}
-async function loadTelegramMessages(){const peer=document.getElementById('dialogs').value;if(!peer)return;const body=document.getElementById('messageTable'),result=document.getElementById('messageResult');try{const rows=await api(`/api/telegram/messages?peer=${encodeURIComponent(peer)}&limit=100`),q=document.getElementById('search').value.toLowerCase();body.innerHTML='';rows.filter(x=>!q||x.message.toLowerCase().includes(q)).forEach(x=>{const tr=document.createElement('tr');[x.senderId,x.message,x.date||''].forEach(v=>{const td=document.createElement('td');td.textContent=v||'';tr.appendChild(td)});body.appendChild(tr)});result.textContent=`Loaded ${rows.length} messages.`}catch(e){result.textContent=e.message}}
-loadStats();
+function showSection(id){
+  document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));
+  const section=document.getElementById(id);
+  if(!section)return;
+  section.classList.remove('hidden');
+  section.scrollIntoView({behavior:'smooth',block:'start'});
+  if(id==='dashboard')loadStats();
+  if(id==='messages')loadDialogs();
+}
+
+async function api(url,options){
+  const r=await fetch(url,options);
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error||'Request failed');
+  return d;
+}
+
+async function loadStats(){
+  try{
+    const d=await api('/api/stats');
+    document.getElementById('total').textContent=d.total||0;
+    document.getElementById('telegram').textContent=d.telegram||0;
+    document.getElementById('connection').textContent=d.connected?'Connected':'Not connected';
+  }catch(e){console.error(e);}
+}
+
+async function sendTelegramCode(){
+  const phone=document.getElementById('phone').value.trim();
+  const box=document.getElementById('telegramResult');
+  if(!phone){box.textContent='Enter your Telegram phone number first.';return;}
+  try{
+    const d=await api('/api/telegram/send-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone})});
+    box.textContent=d.message||'Telegram code sent.';
+  }catch(e){box.textContent=e.message;}
+}
+
+async function verifyTelegram(){
+  const phone=document.getElementById('phone').value.trim();
+  const code=document.getElementById('code').value.trim();
+  const box=document.getElementById('telegramResult');
+  try{
+    const d=await api('/api/telegram/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,code})});
+    if(d.passwordRequired){
+      document.getElementById('passwordPanel').classList.remove('hidden');
+      box.textContent=d.message;
+    }else{
+      box.textContent=d.message;
+      loadStats();
+    }
+  }catch(e){box.textContent=e.message;}
+}
+
+async function verifyPassword(){
+  const password=document.getElementById('password').value;
+  const box=document.getElementById('telegramResult');
+  try{
+    const d=await api('/api/telegram/password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});
+    box.textContent=d.message;
+    loadStats();
+  }catch(e){box.textContent=e.message;}
+}
+
+async function loadDialogs(){
+  const select=document.getElementById('dialogs');
+  const result=document.getElementById('messageResult');
+  try{
+    const rows=await api('/api/telegram/dialogs');
+    select.innerHTML='<option value="">Select a chat</option>';
+    rows.forEach(x=>{
+      const o=document.createElement('option');
+      o.value=x.id;
+      o.textContent=x.name;
+      select.appendChild(o);
+    });
+    result.textContent=`Loaded ${rows.length} accessible chats.`;
+  }catch(e){result.textContent=e.message;}
+}
+
+async function loadTelegramMessages(){
+  const peer=document.getElementById('dialogs').value;
+  if(!peer)return;
+  const body=document.getElementById('messageTable');
+  const result=document.getElementById('messageResult');
+  try{
+    const rows=await api(`/api/telegram/messages?peer=${encodeURIComponent(peer)}&limit=100`);
+    const q=document.getElementById('search').value.toLowerCase();
+    body.innerHTML='';
+    rows.filter(x=>!q||String(x.message||'').toLowerCase().includes(q)).forEach(x=>{
+      const tr=document.createElement('tr');
+      [x.senderId,x.message,x.date||''].forEach(v=>{
+        const td=document.createElement('td');
+        td.textContent=v||'';
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+    result.textContent=`Loaded ${rows.length} messages.`;
+  }catch(e){result.textContent=e.message;}
+}
+
+function initApp(){
+  document.querySelectorAll('.sidebar button').forEach(btn=>{
+    btn.type='button';
+  });
+  showSection('dashboard');
+}
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initApp);else initApp();
