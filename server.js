@@ -2,8 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
-const { TelegramClient, Api } = require('telegram');
-const { StringSession } = require('telegram/sessions');
+const { execFileSync } = require('child_process');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC = path.join(__dirname, 'public');
@@ -11,7 +10,24 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 
 let tgClient = null;
 let tgPhoneCodeHash = null;
-let tgSession = new StringSession('');
+let tgSession = null;
+let TelegramClient = null;
+let Api = null;
+let StringSession = null;
+
+function ensureTelegramPackage(){
+  if (TelegramClient) return;
+  try {
+    ({ TelegramClient, Api } = require('telegram'));
+    ({ StringSession } = require('telegram/sessions'));
+    return;
+  } catch (firstError) {
+    console.log('Telegram package missing; installing dependency...');
+    execFileSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['install', '--omit=dev', '--no-audit', '--no-fund', 'telegram@2.26.22'], { stdio: 'inherit' });
+    ({ TelegramClient, Api } = require('telegram'));
+    ({ StringSession } = require('telegram/sessions'));
+  }
+}
 
 function readData(){try{return JSON.parse(fs.readFileSync(DATA_FILE,'utf8'));}catch{return [];}}
 function send(res,status,body,type='application/json'){res.writeHead(status,{'Content-Type':type,'Cache-Control':'no-store','Access-Control-Allow-Origin':'*'});res.end(type==='application/json'?JSON.stringify(body):body);}
@@ -21,6 +37,8 @@ function configured(){return Boolean(process.env.TELEGRAM_API_ID&&process.env.TE
 
 async function makeClient(){
   if(!configured()) throw new Error('Telegram API credentials are not configured');
+  ensureTelegramPackage();
+  if(!tgSession) tgSession = new StringSession('');
   if(tgClient) return tgClient;
   tgClient = new TelegramClient(tgSession, Number(process.env.TELEGRAM_API_ID), process.env.TELEGRAM_API_HASH, {connectionRetries:5});
   await tgClient.connect();
