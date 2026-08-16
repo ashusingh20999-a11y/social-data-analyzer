@@ -1,9 +1,10 @@
 {
   "name": "social-data-analyzer",
-  "version": "1.0.0",
-  "description": "Authorized Telegram and Instagram export analyzer",
+  "version": "1.1.0",
+  "description": "Authorized Telegram and public Instagram analyzer",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
+  "scripts": {"start": "node server.js"},
+  "dependencies": {
+    "telegram": "^2.26.22"
   }
 }
