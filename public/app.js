@@ -99,10 +99,10 @@ async function loadTelegramMessages(){
 }
 
 function initApp(){
-  document.querySelectorAll('.sidebar button').forEach(btn=>{
+  document.querySelectorAll('.sidebar button,.mobile-nav button').forEach(btn=>{
     btn.type='button';
   });
-  showSection('dashboard');
+  showSection('telegram');
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initApp);else initApp();
