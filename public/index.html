@@ -1,10 +1,74 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Social Analyzer</title><link rel="stylesheet" href="style.css"></head>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Social Analyzer</title>
+<link rel="stylesheet" href="style.css?v=3">
+</head>
 <body>
-<aside class="sidebar"><h2>Social Analyzer</h2><button onclick="showSection('dashboard')">Dashboard</button><button onclick="showSection('telegram')">Connect Telegram</button><button onclick="showSection('messages')">Chat Viewer</button></aside>
-<main class="main"><header><div><h1>Social Data Analyzer</h1><p>Authorized account data only</p></div><span class="status">Secure Connection</span></header>
-<section id="dashboard"><h2>Dashboard</h2><div class="cards"><div class="card"><span>Total Messages</span><strong id="total">0</strong></div><div class="card"><span>Telegram</span><strong id="telegram">0</strong></div><div class="card"><span>Connection</span><strong id="connection">Not connected</strong></div></div></section>
-<section id="telegram" class="hidden"><h2>Connect Telegram</h2><div class="panel"><h3>1. Send Telegram code</h3><input id="phone" placeholder="+91XXXXXXXXXX"><button class="primary" onclick="sendTelegramCode()">Send Code</button><p id="telegramResult"></p></div><div class="panel"><h3>2. Verify code</h3><input id="code" placeholder="Telegram OTP"><button class="primary" onclick="verifyTelegram()">Verify</button></div><div class="panel hidden" id="passwordPanel"><h3>3. Telegram 2FA</h3><input id="password" type="password" placeholder="2FA password"><button class="primary" onclick="verifyPassword()">Verify 2FA</button></div></section>
-<section id="messages" class="hidden"><h2>Telegram Chat Viewer</h2><div class="panel"><button class="primary" onclick="loadDialogs()">Load My Accessible Chats</button><select id="dialogs" onchange="loadTelegramMessages()"><option value="">Select a chat</option></select><input id="search" placeholder="Search loaded messages"><button class="primary" onclick="loadTelegramMessages()">Load Messages</button><p id="messageResult"></p></div><div class="table-wrap"><table><thead><tr><th>Sender ID</th><th>Message</th><th>Date</th></tr></thead><tbody id="messageTable"></tbody></table></div></section>
-</main><script src="app.js"></script></body></html>
+<aside class="sidebar">
+  <h2>Social Analyzer</h2>
+  <button type="button" onclick="showSection('dashboard')">Dashboard</button>
+  <button type="button" onclick="showSection('telegram')">Connect Telegram</button>
+  <button type="button" onclick="showSection('messages')">Chat Viewer</button>
+</aside>
+
+<div class="mobile-nav">
+  <button type="button" onclick="showSection('dashboard')">Dashboard</button>
+  <button type="button" onclick="showSection('telegram')">Connect Telegram</button>
+  <button type="button" onclick="showSection('messages')">Chat Viewer</button>
+</div>
+
+<main class="main">
+<header>
+  <div><h1>Social Data Analyzer</h1><p>Authorized account data only</p></div>
+  <span class="status">Secure Connection</span>
+</header>
+
+<section id="dashboard">
+  <h2>Dashboard</h2>
+  <div class="cards">
+    <div class="card"><span>Total Messages</span><strong id="total">0</strong></div>
+    <div class="card"><span>Telegram</span><strong id="telegram">0</strong></div>
+    <div class="card"><span>Connection</span><strong id="connection">Not connected</strong></div>
+  </div>
+</section>
+
+<section id="telegram" class="hidden">
+  <h2>Connect Telegram</h2>
+  <div class="panel">
+    <h3>1. Send Telegram code</h3>
+    <input id="phone" type="tel" autocomplete="tel" placeholder="+91XXXXXXXXXX">
+    <button type="button" class="primary" onclick="sendTelegramCode()">Send Code</button>
+    <p id="telegramResult"></p>
+  </div>
+  <div class="panel">
+    <h3>2. Verify code</h3>
+    <input id="code" inputmode="numeric" autocomplete="one-time-code" placeholder="Telegram OTP">
+    <button type="button" class="primary" onclick="verifyTelegram()">Verify</button>
+  </div>
+  <div class="panel hidden" id="passwordPanel">
+    <h3>3. Telegram 2FA</h3>
+    <input id="password" type="password" autocomplete="current-password" placeholder="2FA password">
+    <button type="button" class="primary" onclick="verifyPassword()">Verify 2FA</button>
+  </div>
+</section>
+
+<section id="messages" class="hidden">
+  <h2>Telegram Chat Viewer</h2>
+  <div class="panel">
+    <button type="button" class="primary" onclick="loadDialogs()">Load My Accessible Chats</button>
+    <select id="dialogs" onchange="loadTelegramMessages()"><option value="">Select a chat</option></select>
+    <input id="search" placeholder="Search loaded messages">
+    <button type="button" class="primary" onclick="loadTelegramMessages()">Load Messages</button>
+    <p id="messageResult"></p>
+  </div>
+  <div class="table-wrap">
+    <table><thead><tr><th>Sender ID</th><th>Message</th><th>Date</th></tr></thead><tbody id="messageTable"></tbody></table>
+  </div>
+</section>
+</main>
+<script src="app.js?v=3"></script>
+</body>
+</html>
