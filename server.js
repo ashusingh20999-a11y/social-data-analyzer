@@ -33,14 +33,27 @@ function readData(){try{return JSON.parse(fs.readFileSync(DATA_FILE,'utf8'));}ca
 function send(res,status,body,type='application/json'){res.writeHead(status,{'Content-Type':type,'Cache-Control':'no-store','Access-Control-Allow-Origin':'*'});res.end(type==='application/json'?JSON.stringify(body):body);}
 function body(req){return new Promise((resolve,reject)=>{let s='';req.on('data',c=>{s+=c});req.on('end',()=>{try{resolve(JSON.parse(s||'{}'))}catch(e){reject(e)}});req.on('error',reject)})}
 function safeFile(file){const ext=path.extname(file).toLowerCase();const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8'};return types[ext]||'application/octet-stream';}
-function configured(){return Boolean(process.env.TELEGRAM_API_ID&&process.env.TELEGRAM_API_HASH);}
+
+// Render environment variables are strings. Trim whitespace and accept only
+// the exact variable names used by this application.
+function telegramCredentials(){
+  const apiId = String(process.env.TELEGRAM_API_ID || '').trim();
+  const apiHash = String(process.env.TELEGRAM_API_HASH || '').trim();
+  return { apiId, apiHash };
+}
+
+function configured(){
+  const { apiId, apiHash } = telegramCredentials();
+  return Boolean(apiId && apiHash && /^\d+$/.test(apiId));
+}
 
 async function makeClient(){
-  if(!configured()) throw new Error('Telegram API credentials are not configured');
+  const { apiId, apiHash } = telegramCredentials();
+  if(!configured()) throw new Error('Telegram API credentials are not configured. Set TELEGRAM_API_ID and TELEGRAM_API_HASH in the Render Environment for this service, then redeploy.');
   ensureTelegramPackage();
   if(!tgSession) tgSession = new StringSession('');
   if(tgClient) return tgClient;
-  tgClient = new TelegramClient(tgSession, Number(process.env.TELEGRAM_API_ID), process.env.TELEGRAM_API_HASH, {connectionRetries:5});
+  tgClient = new TelegramClient(tgSession, Number(apiId), apiHash, {connectionRetries:5});
   await tgClient.connect();
   return tgClient;
 }
@@ -54,13 +67,24 @@ const server=http.createServer(async (req,res)=>{
     }
 
     if(req.method==='GET'&&url.pathname==='/api/telegram/status'){
-      return send(res,200,{configured:configured(),connected:Boolean(tgClient&&tgClient.connected),mode:'authorized_account_only'});
+      const { apiId, apiHash } = telegramCredentials();
+      return send(res,200,{
+        configured:configured(),
+        connected:Boolean(tgClient&&tgClient.connected),
+        mode:'authorized_account_only',
+        apiIdPresent:Boolean(apiId),
+        apiHashPresent:Boolean(apiHash),
+        apiIdValid:/^\d+$/.test(apiId),
+        apiIdLength:apiId.length,
+        apiHashLength:apiHash.length
+      });
     }
 
     if(req.method==='POST'&&url.pathname==='/api/telegram/send-code'){
       const b=await body(req); if(!b.phone) return send(res,400,{error:'Phone number is required'});
       const client=await makeClient();
-      const result=await client.invoke(new Api.auth.SendCode({phoneNumber:b.phone,apiId:Number(process.env.TELEGRAM_API_ID),apiHash:process.env.TELEGRAM_API_HASH,settings:new Api.auth.CodeSettings({})}));
+      const { apiId, apiHash } = telegramCredentials();
+      const result=await client.invoke(new Api.auth.SendCode({phoneNumber:b.phone,apiId:Number(apiId),apiHash:apiHash,settings:new Api.auth.CodeSettings({})}));
       tgPhoneCodeHash=result.phoneCodeHash;
       return send(res,200,{success:true,message:'Telegram code sent. Enter the code in the app.'});
     }
