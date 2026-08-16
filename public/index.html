@@ -2,22 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Social Data Analyzer</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Social Analyzer</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <aside class="sidebar">
     <h2>Social Analyzer</h2>
     <button onclick="showSection('dashboard')">Dashboard</button>
-    <button onclick="showSection('import')">Import Data</button>
+    <button onclick="showSection('telegram')">Connect Telegram</button>
     <button onclick="showSection('messages')">Chat Viewer</button>
   </aside>
 
   <main class="main">
     <header>
-      <div><h1>Social Data Analyzer</h1><p>Authorized / exported data</p></div>
-      <span class="status">Local Data</span>
+      <div><h1>Social Data Analyzer</h1><p>Authorized account data only</p></div>
+      <span class="status">Secure Connection</span>
     </header>
 
     <section id="dashboard">
@@ -25,39 +25,32 @@
       <div class="cards">
         <div class="card"><span>Total Messages</span><strong id="total">0</strong></div>
         <div class="card"><span>Telegram</span><strong id="telegram">0</strong></div>
-        <div class="card"><span>Instagram</span><strong id="instagram">0</strong></div>
+        <div class="card"><span>Connection</span><strong id="connection">Not connected</strong></div>
       </div>
     </section>
 
-    <section id="import" class="hidden">
-      <h2>Import Data</h2>
+    <section id="telegram" class="hidden">
+      <h2>Connect Telegram</h2>
       <div class="panel">
-        <select id="platform">
-          <option value="Telegram">Telegram</option>
-          <option value="Instagram">Instagram</option>
-        </select>
-        <input type="file" id="file" accept=".json" required>
-        <button class="primary" onclick="importData()">Import Data</button>
-        <p id="importResult"></p>
+        <h3>Telegram account authorization</h3>
+        <p>Connect your own Telegram account to access chats and messages that your account is authorized to access.</p>
+        <button class="primary" onclick="checkTelegram()">Check Telegram Setup</button>
+        <p id="telegramResult"></p>
+      </div>
+      <div class="panel note">
+        <strong>Important:</strong> This does not allow entering another person's username to read their private chats. Telegram authorization is required.
       </div>
     </section>
 
     <section id="messages" class="hidden">
       <h2>Chat Viewer</h2>
       <div class="panel searchbar">
-        <input id="search" placeholder="Search sender, chat or message...">
-        <select id="filterPlatform">
-          <option value="">All Platforms</option>
-          <option value="Telegram">Telegram</option>
-          <option value="Instagram">Instagram</option>
-        </select>
+        <input id="search" placeholder="Search accessible chats or messages...">
+        <select id="filterPlatform"><option value="Telegram">Telegram</option></select>
         <button class="primary" onclick="loadMessages()">Search</button>
       </div>
       <div class="table-wrap">
-        <table>
-          <thead><tr><th>Platform</th><th>Chat</th><th>Sender</th><th>Message</th><th>Date</th></tr></thead>
-          <tbody id="messageTable"></tbody>
-        </table>
+        <table><thead><tr><th>Platform</th><th>Chat</th><th>Sender</th><th>Message</th><th>Date</th></tr></thead><tbody id="messageTable"></tbody></table>
       </div>
     </section>
   </main>
